@@ -1,0 +1,23 @@
+# The base configuration for your project
+project_id = "your-project-ref"
+port = 54321
+hostname = "localhost"
+# Custom config for database
+[database]
+port = 54322
+# Custom config for PostgREST
+[api] 
+port = 54321
+# Custom config for GoTrue
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+# Custom config for Supabase Studio
+[studio]
+port = 54323
+# Custom config for Functions
+[functions]
+# Custom config for Storage
+[storage]
+file_size_limit = "50MB"

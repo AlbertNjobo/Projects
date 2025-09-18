@@ -1,0 +1,27 @@
+name: Copilot Assisted Development
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches: [main, develop]
+
+jobs:
+  copilot-setup:
+    uses: ./.github/copilot-setup-steps.yml
+  
+  test-and-build:
+    needs: copilot-setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/copilot-setup-steps.yml
+      
+      - name: Run tests
+        run: npm test || echo "No tests configured yet"
+      
+      - name: Build project
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}

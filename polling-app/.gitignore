@@ -1,0 +1,14 @@
+# Created by .ignore support for Visual Studio Code
+# https://marketplace.visualstudio.com/items?itemName=vsls-contrib.vscode-ignore
+
+.next/
+node_modules/
+
+# Keep the package-lock.json file for consistent installs, but still ignore other lockfiles
+/package-lock.json
+!/package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Unignore the vercel.json file
+!vercel.json
