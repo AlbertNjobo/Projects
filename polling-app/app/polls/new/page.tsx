@@ -22,6 +22,7 @@ type FormData = z.infer<typeof formSchema>
 
 export default function NewPollPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
   const router = useRouter()
 
   const form = useForm<FormData>({
@@ -44,45 +45,32 @@ export default function NewPollPage() {
     setIsLoading(true)
 
     try {
-      // Import Supabase client dynamically
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
+      const response = await fetch('/api/polls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: data.question,
+          options: data.options.map(option => option.text)
+        }),
+      })
 
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) {
-        router.push('/auth/login')
-        return
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to create poll')
       }
 
-      // Create poll
-      const { data: poll, error: pollError } = await supabase
-        .from('polls')
-        .insert({
-          user_id: user.id,
-          question: data.question
-        })
-        .select()
-        .single()
-
-      if (pollError) throw pollError
-
-      // Create options
-      const optionsData = data.options.map((option, index) => ({
-        poll_id: poll.id,
-        text: option.text,
-        position: index + 1
-      }))
-
-      const { error: optionsError } = await supabase
-        .from('options')
-        .insert(optionsData)
-
-      if (optionsError) throw optionsError
-
-      // Redirect to poll results
-      router.push(`/polls/${poll.id}`)
+      // Poll created successfully
+      await response.json()
+      
+      // Show success message
+      setShowSuccess(true)
+      
+      // Redirect to polls dashboard after a brief delay
+      setTimeout(() => {
+        router.push('/polls')
+      }, 1500)
     } catch (error) {
       console.error('Error creating poll:', error)
       form.setError('root', {
@@ -105,13 +93,31 @@ export default function NewPollPage() {
             <p className="text-gray-600 mt-2">Create an engaging poll and share it with your audience</p>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Poll Details</CardTitle>
-              <CardDescription>
-                Enter your question and at least 2 options for people to choose from
-              </CardDescription>
-            </CardHeader>
+          {showSuccess ? (
+            <Card className="text-center py-12">
+              <CardContent>
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Poll Created Successfully!</h3>
+                <p className="text-gray-600 mb-4">
+                  Your poll has been created and is ready to collect responses.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Redirecting to your polls dashboard...
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Poll Details</CardTitle>
+                <CardDescription>
+                  Enter your question and at least 2 options for people to choose from
+                </CardDescription>
+              </CardHeader>
             <CardContent>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -211,6 +217,7 @@ export default function NewPollPage() {
               </Form>
             </CardContent>
           </Card>
+          )}
         </div>
       </div>
     </div>
