@@ -1,4 +1,26 @@
-// app/vote/[id]/page.tsx
-export default function VotePage({ params }: { params: { id: string } }) {
-  return <h1>Vote on Poll {params.id}</h1>;
+'use client'
+
+import { useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+
+export default function VotePage() {
+  const router = useRouter()
+  const params = useParams()
+  const pollId = params?.id as string
+
+  useEffect(() => {
+    // Redirect to the poll detail page which now handles voting
+    if (pollId) {
+      router.replace(`/polls/${pollId}`)
+    }
+  }, [pollId, router])
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Redirecting to poll...</p>
+      </div>
+    </div>
+  )
 }
